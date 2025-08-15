@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .forms import AddForm
 from .models import Contact
 from django.http import HttpResponseRedirect
@@ -41,4 +41,44 @@ def add(request):
     else:
         return render(request, 'mycontacts/add.html')
 
+def delete(request, pk):
+    """this function is called to delete one contact member from your contact list in your Database """
+    if request.method == 'GET':
+        delete_contact = Contact.objects.get(id=pk)
+
+        delete_contact.delete()
+
+        return redirect('show')
     
+    else:
+        return redirect('show')
+
+def edit(request, pk):
+    """ This function is called to edit one contact member of your contact list in your Database """
+    if request.method == 'POST':
+        
+        django_form = AddForm(request.POST)
+        if django_form.is_valid():
+           
+            """ Assign data in Django Form to local variables """
+            new_member_name = django_form.data.get("name")
+            new_member_relation = django_form.data.get("relation")
+            new_member_phone = django_form.data.get('phone')
+            new_member_email = django_form.data.get('email')
+            
+            """ This is how your model connects to database and create a new member """
+            to_edit = Contact.objects.get(id=pk)
+            to_edit.name = new_member_name
+            to_edit.relation = new_member_relation
+            to_edit.phone = new_member_phone
+            to_edit.email = new_member_email
+
+            to_edit.save()
+
+            return redirect('show')    
+        
+        else:
+            """ redirect to the same page if django_form goes wrong """
+            return render(request, 'mycontacts/add.html')
+    else:
+        return render(request, 'mycontacts/add.html')
